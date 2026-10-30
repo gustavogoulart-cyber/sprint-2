@@ -72,7 +72,7 @@
           <select name="categoria" class="form-select form-select-sm" onchange="this.form.submit()">
             <option value="">Todas as Categorias</option>
             <% categorias.forEach(cat => { %>
-              <option value="<%= cat.id %>" <%= categoriaSelecionada == cat.id ? 'selected' : '' %>><%= cat.nome %></option>
+              <option value="<%= cat.id %>" <%= (typeof categoriaSelecionada !== 'undefined' && categoriaSelecionada == cat.id) ? 'selected' : '' %>><%= cat.nome %></option>
             <% }) %>
           </select>
         </form>

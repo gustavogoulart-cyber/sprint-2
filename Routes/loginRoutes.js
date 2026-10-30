@@ -1,23 +1,27 @@
 // Routes/loginRoutes.js
 const express = require('express');
 const router = express.Router();
-const db = require('../Dados/db');
+const db = require('../db'); 
 
-// Rota GET - Mostra a página de login
 router.get('/', (req, res) => {
   res.render('login', { erro: null });
 });
 
-// Rota POST - Valida o login
-router.post('/autenticar', (req, res) => {
+router.post('/autenticar', async (req, res) => {
   const { email, senha } = req.body;
-  const usuario = db.usuarios.find(u => u.email === email && u.senha === senha);
 
-  if (usuario) {
-    // 🔴 ATENÇÃO AQUI: Tem de ter a barra '/' no início!
-    res.redirect('/dashboard'); 
-  } else {
-    res.render('login', { erro: 'E-mail ou senha inválidos.' });
+  try {
+    const query = 'SELECT * FROM usuarios WHERE email = $1 AND senha = $2 AND ativo = true;';
+    const resultado = await db.query(query, [email, senha]);
+
+    if (resultado.rows.length > 0) {
+      res.redirect('/admin/dashboard');
+    } else {
+      res.render('login', { erro: 'E-mail ou senha inválidos.' });
+    }
+  } catch (err) {
+    console.error('Erro na autenticação:', err);
+    res.render('login', { erro: 'Erro ao conectar à base de dados.' });
   }
 });
 

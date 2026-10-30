@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const PORT = 3000;
+const db = require('./db'); 
 
 // Configuração do motor de visualização (EJS)
 app.set('view engine', 'ejs');

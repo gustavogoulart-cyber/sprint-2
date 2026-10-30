@@ -1,25 +1,28 @@
 // Routes/landingRoutes.js
 const express = require('express');
 const router = express.Router();
-const db = require('../Dados/db');
+const db = require('../db'); 
 
-// Rota principal da Landing Page
-router.get('/', (req, res) => {
-  const categoriaId = req.query.categoria;
-  
-  let produtosFiltrados = db.produtos.filter(p => p.ativo);
+router.get('/', async (req, res) => {
+  try {
+    const produtosQuery = `
+      SELECT p.*, c.nome AS "categoriaNome"
+      FROM produtos p
+      JOIN categorias c ON p.categoria_id = c.id
+      WHERE p.ativo = true
+      ORDER BY p.id;
+    `;
+    const produtosRes = await db.query(produtosQuery);
+    const categoriasRes = await db.query('SELECT * FROM categorias ORDER BY nome;');
 
-  if (categoriaId) {
-    produtosFiltrados = produtosFiltrados.filter(
-      p => p.categoriaId === parseInt(categoriaId)
-    );
+    res.render('admin/index', { 
+      produtos: produtosRes.rows,
+      categorias: categoriasRes.rows
+    });
+  } catch (err) {
+    console.error('Erro ao carregar landing page:', err);
+    res.status(500).send('Erro ao carregar a página inicial.');
   }
-
-  res.render('admin/index', {
-    produtos: produtosFiltrados,
-    categorias: db.categorias,
-    categoriaSelecionada: categoriaId || ''
-  });
 });
 
 module.exports = router;

@@ -1,68 +1,33 @@
 // Routes/produtosRoutes.js
 const express = require('express');
 const router = express.Router();
-const db = require('../Dados/db');
+const db = require('../db'); 
 
-// 1. Listagem / Relatório de Produtos (com Filtros e Ordenação)
-router.get('/', (req, res) => {
-  let lista = [...db.produtos];
-  const { busca, ordenacao } = req.query;
+router.get('/', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        p.id, 
+        p.nome, 
+        p.preco, 
+        p.estoque_atual AS "estoqueAtual", 
+        p.estoque_minimo AS "estoqueMinimo",
+        p.autonomia,
+        p.velocidade_maxima AS "velocidadeMaxima",
+        p.descricao,
+        p.imagem,
+        c.nome AS "categoriaNome"
+      FROM produtos p
+      JOIN categorias c ON p.categoria_id = c.id
+      ORDER BY p.id;
+    `;
+    const resultado = await db.query(query);
 
-  // Filtro de Busca por Nome
-  if (busca) {
-    lista = lista.filter(p => p.nome.toLowerCase().includes(busca.toLowerCase()));
+    res.render('produtos', { produtos: resultado.rows });
+  } catch (err) {
+    console.error('Erro ao buscar produtos:', err);
+    res.status(500).send('Erro ao buscar a lista de produtos.');
   }
-
-  // Ordenação do Relatório
-  if (ordenacao === 'preco-asc') {
-    lista.sort((a, b) => a.preco - b.preco);
-  } else if (ordenacao === 'estoque-desc') {
-    lista.sort((a, b) => b.estoqueAtual - a.estoqueAtual);
-  } else if (ordenacao === 'baixo-estoque') {
-    lista = lista.filter(p => p.estoqueAtual <= p.estoqueMinimo);
-  }
-
-  res.render('produtos', { 
-    produtos: lista, 
-    busca: busca || '', 
-    ordenacao: ordenacao || '' 
-  });
 });
 
-// 2. Registar Movimentação de Estoque (Entrada / Saída)
-router.post('/movimentar', (req, res) => {
-  const { produtoId, tipo, quantidade, descricao } = req.body;
-  
-  const produto = db.produtos.find(p => p.id === parseInt(produtoId));
-  const qtd = parseInt(quantidade);
-
-  if (produto && qtd > 0) {
-    // Atualização automática da quantidade em stock
-    if (tipo === 'entrada') {
-      produto.estoqueAtual += qtd;
-    } else if (tipo === 'saida') {
-      // Impede que o stock fique negativo
-      if (produto.estoqueAtual >= qtd) {
-        produto.estoqueAtual -= qtd;
-      }
-    }
-
-    // Registo do Histórico
-    const novaMovimentacao = {
-      id: db.movimentacoes.length + 1,
-      produtoId: produto.id,
-      tipo,
-      quantidade: qtd,
-      data: new Date().toLocaleString('pt-BR'),
-      descricao,
-      estoqueResultante: produto.estoqueAtual
-    };
-
-    db.movimentacoes.push(novaMovimentacao);
-  }
-
-  res.redirect('/produtos');
-});
-
-// OBRIGATÓRIO: Exportar o router para não dar erro no app.js!
 module.exports = router;
