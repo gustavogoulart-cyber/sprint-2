@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Estoque & Relatórios | VoltMotores</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/CSS/style.css">
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="brand"><i class="fa-solid fa-bolt me-2"></i>VoltMotores</div>
+      <nav class="nav flex-column mt-3">
+        <a class="nav-link" href="/admin/dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+        <a class="nav-link active" href="/produtos"><i class="fa-solid fa-boxes-stacked"></i> Gestão de Estoque</a>
+        <a class="nav-link" href="/categorias"><i class="fa-solid fa-tags"></i> Categorias</a>
+        <a class="nav-link" href="/usuarios"><i class="fa-solid fa-users"></i> Usuários</a>
+        <a class="nav-link text-danger mt-auto mb-3" href="/"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 class="fw-bold m-0">Gestão de Estoque e Relatórios</h3>
+          <p class="text-muted small m-0">Consulte o saldo de produtos e registre movimentações</p>
+        </div>
+      </div>
+
+      <!-- Formulário de Movimentação de Estoque -->
+      <div class="card border-0 shadow-sm p-4 rounded-4 mb-4">
+        <h6 class="fw-bold text-secondary mb-3"><i class="fa-solid fa-right-left me-2"></i>Registrar Nova Entrada / Saída</h6>
+        <form action="/produtos/movimentar" method="POST" class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label small fw-bold">Produto</label>
+            <select name="produtoId" class="form-select" required>
+              <% produtos.forEach(p => { %>
+                <option value="<%= p.id %>"><%= p.nome %> (Atual: <%= p.estoqueAtual %> un)</option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label small fw-bold">Operação</label>
+            <select name="tipo" class="form-select" required>
+              <option value="entrada">Entrada (Compra)</option>
+              <option value="saida">Saída (Venda / Uso)</option>
+            </select>
+          </div>
+
+          <div class="col-md-2">
+            <label class="form-label small fw-bold">Quantidade</label>
+            <input type="number" name="quantidade" class="form-control" min="1" required placeholder="Qtd">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label small fw-bold">Observação / Descrição</label>
+            <input type="text" name="descricao" class="form-control" required placeholder="Ex: Pedido #1020">
+          </div>
+
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100 fw-bold"><i class="fa-solid fa-check me-1"></i> Confirmar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Relatório de Produtos com Filtro -->
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+          <h6 class="fw-bold text-secondary mb-0"><i class="fa-solid fa-list me-2"></i>Relatório Geral de Motinhas</h6>
+
+          <form method="GET" action="/produtos" class="d-flex gap-2">
+            <input type="text" name="busca" class="form-control form-control-sm" placeholder="Buscar por nome..." value="<%= busca %>">
+            <select name="ordenacao" class="form-select form-select-sm">
+              <option value="">Ordenar por...</option>
+              <option value="preco-asc" <%= ordenacao === 'preco-asc' ? 'selected' : '' %>>Menor Preço</option>
+              <option value="estoque-desc" <%= ordenacao === 'estoque-desc' ? 'selected' : '' %>>Maior Estoque</option>
+              <option value="baixo-estoque" <%= ordenacao === 'baixo-estoque' ? 'selected' : '' %>>Abaixo do Mínimo</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-dark">Filtrar</button>
+          </form>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Modelo</th>
+                <th>Categoria</th>
+                <th>Preço Un.</th>
+                <th>Estoque Atual</th>
+                <th>Estoque Mín.</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% produtos.forEach(p => { %>
+                <tr>
+                  <td>#<%= p.id %></td>
+                  <td><strong><%= p.nome %></strong></td>
+                  <td><span class="badge bg-light text-dark border"><%= p.categoriaNome %></span></td>
+                  <td>R$ <%= p.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %></td>
+                  <td><strong><%= p.estoqueAtual %> un</strong></td>
+                  <td><%= p.estoqueMinimo %> un</td>
+                  <td>
+                    <% if (p.estoqueAtual <= p.estoqueMinimo) { %>
+                      <span class="badge bg-danger-subtle text-danger"><i class="fa-solid fa-circle-exclamation me-1"></i>Repor</span>
+                    <% } else { %>
+                      <span class="badge bg-success-subtle text-success"><i class="fa-solid fa-circle-check me-1"></i>OK</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+</body>
+</html>

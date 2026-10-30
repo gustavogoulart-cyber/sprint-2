@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><title>Usuários</title>
+  <link rel="stylesheet" href="/CSS/style.css">
+</head>
+<body style="padding: 2rem;">
+  <h1>Usuários do Sistema</h1>
+  <a href="/dashboard">Voltar ao Dashboard</a>
+  <table>
+    <thead><tr><th>ID</th><th>Nome</th><th>E-mail</th><th>Perfil</th></tr></thead>
+    <tbody>
+      <% usuarios.forEach(u => { %>
+        <tr><td>#<%= u.id %></td><td><%= u.nome %></td><td><%= u.email %></td><td><%= u.perfil %></td></tr>
+      <% }) %>
+    </tbody>
+  </table>
+</body>
+</html>

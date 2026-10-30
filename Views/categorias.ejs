@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><title>Categorias</title>
+  <link rel="stylesheet" href="/CSS/style.css">
+</head>
+<body style="padding: 2rem;">
+  <h1>Categorias de Motinhas</h1>
+  <a href="/admin/dashboard">Voltar ao Dashboard</a>
+  <table>
+    <thead><tr><th>ID</th><th>Nome</th><th>Descrição</th></tr></thead>
+    <tbody>
+      <% categorias.forEach(c => { %>
+        <tr><td>#<%= c.id %></td><td><strong><%= c.nome %></strong></td><td><%= c.descricao %></td></tr>
+      <% }) %>
+    </tbody>
+  </table>
+</body>
+</html>
