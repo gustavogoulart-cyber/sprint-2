@@ -25,9 +25,74 @@
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h3 class="fw-bold m-0">Gestão de Estoque e Relatórios</h3>
-          <p class="text-muted small m-0">Consulte o saldo de produtos e registre movimentações</p>
+          <p class="text-muted small m-0">Consulte o saldo de produtos, edite itens e registre movimentações</p>
         </div>
       </div>
+
+      <% if (typeof produtoEdicao !== 'undefined' && produtoEdicao) { %>
+        <div class="card border-0 shadow-sm p-4 rounded-4 mb-4 border-start border-4 border-primary">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold text-primary mb-0">
+              <i class="fa-solid fa-pen-to-square me-2"></i>Editando: <%= produtoEdicao.nome %> (#<%= produtoEdicao.id %>)
+            </h6>
+            <a href="/produtos" class="btn btn-sm btn-outline-secondary">Cancelar</a>
+          </div>
+
+          <form action="/produtos/editar/<%= produtoEdicao.id %>" method="POST" class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold">Nome do Modelo</label>
+              <input type="text" name="nome" class="form-control" value="<%= produtoEdicao.nome %>" required>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Categoria</label>
+              <select name="categoria_id" class="form-select" required>
+                <% (typeof categorias !== 'undefined' ? categorias : []).forEach(c => { %>
+                  <option value="<%= c.id %>" <%= Number(produtoEdicao.categoriaId) === Number(c.id) ? 'selected' : '' %>>
+                    <%= c.nome %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label small fw-bold">Preço (R$)</label>
+              <input type="number" step="0.01" name="preco" class="form-control" value="<%= produtoEdicao.preco %>" required>
+            </div>
+
+            <div class="col-md-1">
+              <label class="form-label small fw-bold">Estoque</label>
+              <input type="number" name="estoque_atual" class="form-control" value="<%= produtoEdicao.estoqueAtual %>" required>
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label small fw-bold">Estoque Mín.</label>
+              <input type="number" name="estoque_minimo" class="form-control" value="<%= produtoEdicao.estoqueMinimo %>" required>
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Autonomia</label>
+              <input type="text" name="autonomia" class="form-control" value="<%= produtoEdicao.autonomia || '' %>">
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label small fw-bold">Velocidade Máx.</label>
+              <input type="text" name="velocidade_maxima" class="form-control" value="<%= produtoEdicao.velocidadeMaxima || '' %>">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Descrição</label>
+              <input type="text" name="descricao" class="form-control" value="<%= produtoEdicao.descricao || '' %>">
+            </div>
+
+            <div class="col-12 text-end">
+              <button type="submit" class="btn btn-primary fw-bold">
+                <i class="fa-solid fa-floppy-disk me-1"></i> Salvar Alterações
+              </button>
+            </div>
+          </form>
+        </div>
+      <% } %>
 
       <!-- Formulário de Movimentação de Estoque -->
       <div class="card border-0 shadow-sm p-4 rounded-4 mb-4">
@@ -68,16 +133,16 @@
 
       <!-- Relatório de Produtos com Filtro -->
       <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
           <h6 class="fw-bold text-secondary mb-0"><i class="fa-solid fa-list me-2"></i>Relatório Geral de Motinhas</h6>
 
           <form method="GET" action="/produtos" class="d-flex gap-2">
-            <input type="text" name="busca" class="form-control form-control-sm" placeholder="Buscar por nome..." value="<%= busca %>">
+            <input type="text" name="busca" class="form-control form-control-sm" placeholder="Buscar por nome..." value="<%= typeof busca !== 'undefined' ? busca : '' %>">
             <select name="ordenacao" class="form-select form-select-sm">
               <option value="">Ordenar por...</option>
-              <option value="preco-asc" <%= ordenacao === 'preco-asc' ? 'selected' : '' %>>Menor Preço</option>
-              <option value="estoque-desc" <%= ordenacao === 'estoque-desc' ? 'selected' : '' %>>Maior Estoque</option>
-              <option value="baixo-estoque" <%= ordenacao === 'baixo-estoque' ? 'selected' : '' %>>Abaixo do Mínimo</option>
+              <option value="preco-asc" <%= (typeof ordenacao !== 'undefined' && ordenacao === 'preco-asc') ? 'selected' : '' %>>Menor Preço</option>
+              <option value="estoque-desc" <%= (typeof ordenacao !== 'undefined' && ordenacao === 'estoque-desc') ? 'selected' : '' %>>Maior Estoque</option>
+              <option value="baixo-estoque" <%= (typeof ordenacao !== 'undefined' && ordenacao === 'baixo-estoque') ? 'selected' : '' %>>Abaixo do Mínimo</option>
             </select>
             <button type="submit" class="btn btn-sm btn-dark">Filtrar</button>
           </form>
@@ -94,6 +159,7 @@
                 <th>Estoque Atual</th>
                 <th>Estoque Mín.</th>
                 <th>Status</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -102,15 +168,20 @@
                   <td>#<%= p.id %></td>
                   <td><strong><%= p.nome %></strong></td>
                   <td><span class="badge bg-light text-dark border"><%= p.categoriaNome %></span></td>
-                  <td>R$ <%= p.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %></td>
+                  <td>R$ <%= Number(p.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) %></td>
                   <td><strong><%= p.estoqueAtual %> un</strong></td>
                   <td><%= p.estoqueMinimo %> un</td>
                   <td>
-                    <% if (p.estoqueAtual <= p.estoqueMinimo) { %>
+                    <% if (Number(p.estoqueAtual) <= Number(p.estoqueMinimo)) { %>
                       <span class="badge bg-danger-subtle text-danger"><i class="fa-solid fa-circle-exclamation me-1"></i>Repor</span>
                     <% } else { %>
                       <span class="badge bg-success-subtle text-success"><i class="fa-solid fa-circle-check me-1"></i>OK</span>
                     <% } %>
+                  </td>
+                  <td>
+                    <a href="/produtos/editar/<%= p.id %>" class="btn btn-sm btn-outline-primary">
+                      <i class="fa-solid fa-pen"></i> Editar
+                    </a>
                   </td>
                 </tr>
               <% }) %>

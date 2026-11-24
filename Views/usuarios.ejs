@@ -1,19 +1,122 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"><title>Usuários</title>
+  <meta charset="UTF-8">
+  <title>Usuários | VoltMotores</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/CSS/style.css">
 </head>
-<body style="padding: 2rem;">
-  <h1>Usuários do Sistema</h1>
-  <a href="/dashboard">Voltar ao Dashboard</a>
-  <table>
-    <thead><tr><th>ID</th><th>Nome</th><th>E-mail</th><th>Perfil</th></tr></thead>
-    <tbody>
-      <% usuarios.forEach(u => { %>
-        <tr><td>#<%= u.id %></td><td><%= u.nome %></td><td><%= u.email %></td><td><%= u.perfil %></td></tr>
-      <% }) %>
-    </tbody>
-  </table>
+<body>
+
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <div class="brand"><i class="fa-solid fa-bolt me-2"></i>VoltMotores</div>
+      <nav class="nav flex-column mt-3">
+        <a class="nav-link" href="/admin/dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+        <a class="nav-link" href="/produtos"><i class="fa-solid fa-boxes-stacked"></i> Gestão de Estoque</a>
+        <a class="nav-link" href="/categorias"><i class="fa-solid fa-tags"></i> Categorias</a>
+        <a class="nav-link active" href="/usuarios"><i class="fa-solid fa-users"></i> Usuários</a>
+        <a class="nav-link text-danger mt-auto mb-3" href="/"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+          <h3 class="fw-bold m-0">Usuários do Sistema</h3>
+          <p class="text-muted small m-0">Gerencie acessos, perfis e dados dos usuários cadastrados</p>
+        </div>
+        <a href="/admin/dashboard" class="btn btn-success fw-bold">
+          <i class="fa-solid fa-arrow-left me-1"></i> Voltar ao Dashboard
+        </a>
+      </div>
+
+      <% if (typeof usuarioEdicao !== 'undefined' && usuarioEdicao) { %>
+        <div class="card border-0 shadow-sm p-4 rounded-4 mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold text-success mb-0">
+              <i class="fa-solid fa-user-pen me-2"></i>Editando Usuário #<%= usuarioEdicao.id %>
+            </h6>
+            <a href="/usuarios" class="btn btn-sm btn-outline-secondary">Cancelar</a>
+          </div>
+
+          <form action="/usuarios/editar/<%= usuarioEdicao.id %>" method="POST" class="row g-3">
+            <div class="col-md-4">
+              <label for="nome" class="form-label small fw-bold">Nome</label>
+              <input id="nome" type="text" name="nome" class="form-control" value="<%= usuarioEdicao.nome %>" required>
+            </div>
+
+            <div class="col-md-4">
+              <label for="email" class="form-label small fw-bold">E-mail</label>
+              <input id="email" type="email" name="email" class="form-control" value="<%= usuarioEdicao.email %>" required>
+            </div>
+
+            <div class="col-md-4">
+              <label for="perfil" class="form-label small fw-bold">Perfil</label>
+              <input id="perfil" type="text" name="perfil" class="form-control" value="<%= usuarioEdicao.perfil || '' %>">
+            </div>
+
+            <div class="col-md-6">
+              <label for="senha" class="form-label small fw-bold">Nova senha (deixe em branco para manter a atual)</label>
+              <input id="senha" type="password" name="senha" class="form-control" placeholder="Opcional">
+            </div>
+
+            <div class="col-md-6 d-flex align-items-end">
+              <div class="form-check mb-2">
+                <input id="ativo" class="form-check-input" type="checkbox" name="ativo" <%= usuarioEdicao.ativo ? 'checked' : '' %>>
+                <label class="form-check-label small fw-bold" for="ativo">Usuário ativo</label>
+              </div>
+            </div>
+
+            <div class="col-12 text-end">
+              <button type="submit" class="btn btn-success fw-bold">
+                <i class="fa-solid fa-floppy-disk me-1"></i> Salvar Alterações
+              </button>
+            </div>
+          </form>
+        </div>
+      <% } %>
+
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Perfil</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% const listaUsuarios = typeof usuarios !== 'undefined' && Array.isArray(usuarios) ? usuarios : []; %>
+              <% if (listaUsuarios.length === 0) { %>
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">Nenhum usuário cadastrado no momento.</td>
+                </tr>
+              <% } else { %>
+                <% listaUsuarios.forEach(u => { %>
+                  <tr>
+                    <td>#<%= u.id %></td>
+                    <td><strong><%= u.nome %></strong></td>
+                    <td><%= u.email %></td>
+                    <td><span class="badge bg-light text-dark border"><%= u.perfil || 'Padrão' %></span></td>
+                    <td>
+                      <a href="/usuarios/editar/<%= u.id %>" class="btn btn-sm btn-outline-success">
+                        <i class="fa-solid fa-pen"></i> Editar
+                      </a>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
 </body>
 </html>
