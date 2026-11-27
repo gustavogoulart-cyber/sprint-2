@@ -13,14 +13,15 @@ router.get('/dashboard', async (req, res) => {
         const totalProdutos = produtos.length;
         const produtosBaixoEstoque = produtos.filter(p => p.estoque_atual <= p.estoque_minimo);
 
-        res.render('admin/index', {
-            categorias: resultadoCategorias.rows,
-            produtos,
-            valorTotalEstoque,
-            totalProdutos,
-            produtosBaixoEstoque,
-            usuario: req.session.usuario
-        });
+res.render('admin/dashboard', {
+    categorias: resultadoCategorias.rows,
+    produtos: produtos,
+    valorTotalEstoque,
+    totalProdutos,
+    produtosBaixoEstoque,
+    ultimasMovimentacoes: [],
+    usuario: req.session.usuario
+});
     } catch (erro) {
         console.log('Erro ao carregar dashboard: ' + erro);
         res.status(500).send('Erro ao carregar dashboard');

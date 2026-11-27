@@ -18,6 +18,24 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Cadastrar novo usuário
+router.post('/', async (req, res) => {
+  const { nome, email, senha, ativo } = req.body;
+  const estaAtivo = ativo === 'true' || ativo === 'on' || ativo === true || ativo === undefined;
+
+  try {
+    await db.query(
+      'INSERT INTO usuarios (nome, email, senha, ativo) VALUES ($1, $2, $3, $4);',
+      [nome, email, senha, estaAtivo]
+    );
+
+    res.redirect('/usuarios');
+  } catch (err) {
+    console.error('Erro ao cadastrar usuário:', err);
+    res.status(500).send('Erro ao cadastrar usuário.');
+  }
+});
+
 // Carregar formulário de edição de um usuário
 router.get('/editar/:id', async (req, res) => {
   const { id } = req.params;
@@ -64,6 +82,19 @@ router.post('/editar/:id', async (req, res) => {
   } catch (err) {
     console.error('Erro ao atualizar usuário:', err);
     res.status(500).send('Erro ao atualizar usuário.');
+  }
+});
+
+// Excluir usuário
+router.post('/excluir/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await db.query('DELETE FROM usuarios WHERE id = $1;', [id]);
+    res.redirect('/usuarios');
+  } catch (err) {
+    console.error('Erro ao excluir usuário:', err);
+    res.status(500).send('Erro ao excluir usuário.');
   }
 });
 

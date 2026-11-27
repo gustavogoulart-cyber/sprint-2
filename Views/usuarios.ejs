@@ -78,6 +78,41 @@
         </div>
       <% } %>
 
+      <!-- Cadastrar Novo Usuário -->
+      <div class="card border-0 shadow-sm p-4 rounded-4 mb-4">
+        <h6 class="fw-bold text-success mb-3">
+          <i class="fa-solid fa-user-plus me-2"></i>Cadastrar Novo Usuário
+        </h6>
+
+        <form action="/usuarios" method="POST" class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label for="novo_nome" class="form-label small fw-bold">Nome</label>
+            <input id="novo_nome" type="text" name="nome" class="form-control" required placeholder="Nome completo">
+          </div>
+
+          <div class="col-md-3">
+            <label for="novo_email" class="form-label small fw-bold">E-mail</label>
+            <input id="novo_email" type="email" name="email" class="form-control" required placeholder="usuario@voltmotores.com">
+          </div>
+
+          <div class="col-md-2">
+            <label for="novo_perfil" class="form-label small fw-bold">Perfil</label>
+            <input id="novo_perfil" type="text" name="perfil" class="form-control" placeholder="admin / estoque">
+          </div>
+
+          <div class="col-md-2">
+            <label for="nova_senha" class="form-label small fw-bold">Senha</label>
+            <input id="nova_senha" type="password" name="senha" class="form-control" required placeholder="••••••••">
+          </div>
+
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100 fw-bold">
+              <i class="fa-solid fa-plus me-1"></i> Cadastrar
+            </button>
+          </div>
+        </form>
+      </div>
+
       <div class="card border-0 shadow-sm rounded-4">
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
@@ -104,9 +139,16 @@
                     <td><%= u.email %></td>
                     <td><span class="badge bg-light text-dark border"><%= u.perfil || 'Padrão' %></span></td>
                     <td>
-                      <a href="/usuarios/editar/<%= u.id %>" class="btn btn-sm btn-outline-success">
-                        <i class="fa-solid fa-pen"></i> Editar
-                      </a>
+                      <div class="d-flex gap-1">
+                        <a href="/usuarios/editar/<%= u.id %>" class="btn btn-sm btn-outline-success">
+                          <i class="fa-solid fa-pen"></i> Editar
+                        </a>
+                        <form action="/usuarios/excluir/<%= u.id %>" method="POST" onsubmit="return confirm('Deseja realmente excluir este usuário?')">
+                          <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="fa-solid fa-trash"></i> Excluir
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 <% }) %>

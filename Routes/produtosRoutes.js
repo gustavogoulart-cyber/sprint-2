@@ -39,6 +39,56 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Cadastrar novo produto
+router.post('/', async (req, res) => {
+  const {
+    nome,
+    preco,
+    estoque_atual,
+    estoque_minimo,
+    autonomia,
+    velocidade_maxima,
+    descricao,
+    imagem,
+    categoria_id
+  } = req.body;
+
+  try {
+    await db.query(
+      `
+      INSERT INTO produtos (
+        nome,
+        preco,
+        estoque_atual,
+        estoque_minimo,
+        autonomia,
+        velocidade_maxima,
+        descricao,
+        imagem,
+        categoria_id
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+      `,
+      [
+        nome,
+        parseFloat(preco),
+        parseInt(estoque_atual, 10) || 0,
+        parseInt(estoque_minimo, 10) || 0,
+        autonomia || null,
+        velocidade_maxima || null,
+        descricao || null,
+        imagem || null,
+        parseInt(categoria_id, 10)
+      ]
+    );
+
+    res.redirect('/produtos');
+  } catch (err) {
+    console.error('Erro ao cadastrar produto:', err);
+    res.status(500).send('Erro ao cadastrar produto.');
+  }
+});
+
 // Carregar produto para edição (estoque, preço, dados)
 router.get('/editar/:id', async (req, res) => {
   const { id } = req.params;
@@ -127,6 +177,19 @@ router.post('/editar/:id', async (req, res) => {
   } catch (err) {
     console.error('Erro ao atualizar produto:', err);
     res.status(500).send('Erro ao atualizar produto.');
+  }
+});
+
+// Excluir produto
+router.post('/excluir/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await db.query('DELETE FROM produtos WHERE id = $1;', [id]);
+    res.redirect('/produtos');
+  } catch (err) {
+    console.error('Erro ao excluir produto:', err);
+    res.status(500).send('Erro ao excluir produto.');
   }
 });
 
